@@ -18,15 +18,7 @@ class Sketch:
 	
 
 	def addToHashes(self,value):
-
-		if len(self.hashes) < self.maxHashSize:
-			self.hashes.append(value)
-			if value > self.maxHashValue:
-				self.maxHashValue = value
-		else :
-			if value < self.maxHashValue:
-				self.hashes.append(value)
-				self.hashes = sorted(self.hashes)[:self.maxHashSize]
+		self.hashList.add(value)
 
 
 
@@ -45,10 +37,6 @@ class Sketch:
 			self.addToHashes(murmur64(kmer))
 
 
-	def getMinHash(self, minHashSize):
-		for i in range(minHashSize):
-
-
 
 
 # for test 
@@ -56,7 +44,7 @@ def test():
 	mySketch = Sketch()
 	filename = 'genome1.fna'
 	mySketch.getHashesFromFile(filename)
-	print mySketch.hashes
+	print mySketch.hashList.getList()
 	
 
 if __name__ == '__main__':
