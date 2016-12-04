@@ -1,27 +1,22 @@
 import sys
 from murmurhash import *
 from MinHashHeap import *
-
 from HashList import *
 
 class Sketch:
 
 	# init sketch
-	def __init__(self, kmerSize = 10, maxSizeOfHashList = 10):
+	def __init__(self, kmerSize = 21, maxSizeOfHashList = 1000):
 		self.kmerSize = kmerSize
-
 		self.hashList = HashList(maxSizeOfHashList)
-
-		self.hashes = []
-		self.maxHashSize = 10
-		self.maxHashValue = 0
 	
-
 	def addToHashes(self,value):
 		self.hashList.add(value)
 
 
-
+	def buildSketch(self, input_filename, output_filename):
+		self.getHashesFromFile(input_filename)
+		self.writeSketch(output_filename)
 
 	def getHashesFromFile(self, filename):
 		input_file = open(filename,'r')
@@ -36,16 +31,19 @@ class Sketch:
 			kmer = seq[i:i+self.kmerSize]
 			self.addToHashes(murmur64(kmer))
 
-
-
+	def writeSketch(self,filename):
+		output_file = open(filename,'w')
+		hl = self.hashList.getList()
+		for i in hl:
+			s = str(i) + '\n'
+			output_file.write(s)
+		output_file.close()
 
 # for test 
 def test():
-	mySketch = Sketch()
-	filename = 'genome1.fna'
-	mySketch.getHashesFromFile(filename)
-	print mySketch.hashList.getList()
-	
+	mySketch1 = Sketch()
+	mySketch1.buildSketch('genome1.fna', 'genome1.msh')
+
 
 if __name__ == '__main__':
 	test()
