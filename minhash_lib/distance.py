@@ -1,5 +1,5 @@
 from __future__ import division
-from sketch import *
+#from sketch import *
 import math
 
 def factorial(n): 
@@ -129,7 +129,7 @@ def compareSketches(refRefName, refQryName):
     else:
         # print jaccard
         #what does 1. here mean?
-        distance = -log(2 * jaccard / (1 + jaccard), math.e) / kmerSize
+        distance = -math.log(2 * jaccard / (1 + jaccard), math.e) / kmerSize
 
     # if distance > maxDistance:
     #     return
@@ -169,7 +169,7 @@ def pValue(x, lengthRef, lengthQuery, kmerSpace, sketchSize):
     return prob(x-1, r, sketchSize)
 
 def test():
-    compareSketches('genome1.msh', 'genome2.msh')
+    compareSketches('test.sig', 'test2.sig')
 
 
 if __name__ == '__main__':
