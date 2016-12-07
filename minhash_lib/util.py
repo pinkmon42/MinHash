@@ -2,6 +2,7 @@ import os
 import pickle
 import random
 from hashlib import sha1
+import mmh3
 
 
 # pickle a hash table for minHash
@@ -37,7 +38,7 @@ def get_kmers(filename, kmersize):
 	kmers = []
 
 	for kmer in yield_kmers(seq, kmersize):
-		kmers.append(hash(kmer))
+		kmers.append(mmh3.hash(kmer))
 
 	return kmers
 
@@ -47,10 +48,10 @@ def yield_kmers(seq, kmersize):
 
 
 def test():
-	#print get_kmers('test.fna', 10)
-	if not os.path.isfile('hashtable.txt'):
-		save_hashtable(100)
-	print get_hashtable(100)
+	print get_kmers('test.fna', 10)
+	# if not os.path.isfile('hashtable.txt'):
+	# 	save_hashtable(100)
+	# print get_hashtable(100)
 	
 
 if __name__ == '__main__':
