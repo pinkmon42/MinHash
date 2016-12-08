@@ -73,6 +73,7 @@ def get_seq(filename):
 			if line[0] == '>':
 				continue
 			seq += line.strip()
+	seq.replace('N', 'G')
 	return seq
 
 def yield_kmers(seq, kmer_size):
