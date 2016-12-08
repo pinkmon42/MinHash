@@ -67,13 +67,11 @@ class LSH():
 		'''
 		hash the vector to bucket
 		'''
-
-		# need to change the hash part
-		s = 0
-		for i in vector:
-			s += i
-
-		return s % 17
+		s = sum(vector)
+		s = ((s >> 16) ^ s) * 0x45d9f3b
+		s = ((s >> 16) ^ s) * 0x45d9f3b
+		s = (s >> 16) ^ s
+		return s % 4
 
 	def get_pairs(self, seq_index):
 		'''
@@ -82,7 +80,6 @@ class LSH():
 		pair = []
 		for i in range(self.band_num):
 			seq_bucket = column(self.bands,i)
-			print seq_bucket
 			pair.append([])
 			for index, value in enumerate(seq_bucket):
 				if value == seq_bucket[seq_index] and not index == seq_index:
@@ -121,13 +118,8 @@ def column(matrix, i):
 def test():
 	myLSH = LSH(20,12,3)
 	myLSH.add('test.fna')
-	print myLSH.sig
-	print myLSH.bands
 	myLSH.add('test2.fna')
-	print myLSH.sig
-	print myLSH.bands
 
-	myLSH.get_pairs(0)
 	print myLSH.count_common(0)
 
 
