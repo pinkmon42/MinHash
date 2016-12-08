@@ -1,134 +1,67 @@
-"""
-A very similar version of sourmash
-need more change
-"""
+'''
+A simple implementation of mash
+bottom sketch minhash
+'''
 
+import mmh3
 import itertools
+import util
 
-class Mash(object):
-	def __init__(self, sketchsize = 10, kmersize = 10, max_prime = 1e10):
+max_prime = 1610612741
 
-		self.kmersize = kmersize
-		self.p = get_prime(max_prime)
-		self.sketch = [self.p] * sketchsize
+class Mash:
+	def __init__(self, kmer_size = 21, sketch_size = 10, filename = 'test.fna'):
 
-	def get_sketch(self, seq):
-		for kmer in yield_kmers(seq, self.kmersize):
-			self.add(kmer)
-
-	def add(self, kmer):
-		sketch = self.sketch
-		# use murmur hash to replace
-		h = hash(kmer)
-		h = h % self.p
-
-		if h >= sketch[-1]:
-			return
-
-		for i,v in enumerate(sketch):
-			if h < v:
-				sketch.insert(i, h)
-				sketch.pop()
-				return
-			elif h == v:
-				return
-
-	def common(self, other):
-		if self.kmersize != other.kmersize:
-			raise
-		if self.p != other.p:
+		if filename == None:
 			raise
 
-		common = 0 
-		for val in yield_overlaps(self.sketch, other.sketch):
-			common += 1
-		return common
+		self.kmer_size = kmer_size
+		self.sketch_size = sketch_size
+		self.filename = filename
+
+		self.sketch = [max_prime] * sketch_size
+
+		self.prime = max_prime
 
 
-	def jaccard(self, other):
-		hashlen = len(self.sketch)
-		while hashlen and self.sketch[hashlen - 1] == self.p:
-			hashlen -= 1
-		if hashlen == 0:
-			raise
+	def get_sketch(self):
+		seq = get_seq(self.filename)
+		for kmer in yield_kmers(seq, self.kmer_size):
+			
+			r = mmh3.hash(kmer)
+			
+			if r > self.sketch[self.sketch_size - 1]:
+				continue
+			
+			if r in self.sketch:
+				continue
+			
+			for index, item in enumerate(self.sketch):
+				if r < item:
+					self.sketch.insert(index, r)
+					break
+			if len(self.sketch) > self.sketch_size:
+				self.sketch = self.sketch[0: self.sketch_size]
 
-		return self.common(other) / float(hashlen)
-# generate kmers in the seq
-def yield_kmers(seq, kmersize):
-	for i in range(len(seq) - kmersize + 1):
-		yield seq[i:i+kmersize]
-
-#naive way to find the overlap
-def yield_overlaps(x1,x2):
-	i,j = 0, 0
-	try:
-		while 1:
-			while x1[i] < x2[j]:
-				i += 1
-			while x1[i] > x2[j]:
-				j += 1
-			if x1[i] == x2[j]:
-				yield x1[i]
-				i += 1
-				j += 1
-	except IndexError:
-		return
-
-# get prime smaller than num
-def get_prime(num):
-	if num == 1:
-		return 1
-
-	p = int(num)
-
-	if p %2 == 0:
-		p -= 1
-	while p > 0:
-		if is_prime(p):
-			return p
-		p -= 2
-
-# taken from khmer 2.0; original author Jason Pell.
-def is_prime(number):
-    """Check if a number is prime."""
-    if number < 2:
-        return False
-    if number == 2:
-        return True
-    if number % 2 == 0:
-        return False
-    for _ in range(3, int(number ** 0.5) + 1, 2):
-        if number % _ == 0:
-            return False
-    return True
-
-def test_Estimator():
-	a = Mash(2,3)
-	b = Mash(2,3)
-	a.sketch = [1,2,3]
-	b.sketch = [2,3,4]
-	print a.common(b)
-	print a.jaccard(b)
-
-def test_sequence():
-	a = Mash(128,32)
-	b = Mash(128,32)
-	a.get_sketch(get_genome_sequence('test.fna'))
-	b.get_sketch(get_genome_sequence('test2.fna'))
-	print a.common(b)
-	print a.jaccard(b)
-
-def get_genome_sequence(filename):
-	input_file = open(filename, 'r')
+def get_seq(filename):
 	seq = ''
-	for ln in input_file:
-		if ln[0] == '>':
-			continue
-		seq += ln.strip()
+	with open(filename,'r') as file:
+		for line in file:
+			if line[0] == '>':
+				continue
+			seq += line.strip()
 	return seq
 
+def yield_kmers(seq, kmer_size):
+	for i in range(len(seq) - kmer_size + 1):
+		yield seq[i: i+kmer_size]
 
+def test():
+	myMash = Mash()
+	myMash.get_sketch()
+	print myMash.sketch
 
 if __name__ == '__main__':
-	test_sequence()
+	test()
+
 
