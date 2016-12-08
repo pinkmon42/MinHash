@@ -10,15 +10,16 @@ import util
 max_prime = 1610612741
 
 class Mash:
-	def __init__(self, kmer_size = 21, sketch_size = 10, filename = 'test.fna'):
+	def __init__(self, kmer_size = 21, sketch_size = 10, filename = None):
 
 		if filename == None:
-			raise
+			raise Exception
 
 		self.kmer_size = kmer_size
 		self.sketch_size = sketch_size
 		self.filename = filename
 
+		# sketch size << number of total kmers
 		self.sketch = [max_prime] * sketch_size
 
 		self.prime = max_prime
@@ -39,9 +40,31 @@ class Mash:
 			for index, item in enumerate(self.sketch):
 				if r < item:
 					self.sketch.insert(index, r)
+					self.sketch.pop()
 					break
-			if len(self.sketch) > self.sketch_size:
-				self.sketch = self.sketch[0: self.sketch_size]
+		self.get_true_sketch()
+
+	def get_true_sketch(self):
+		true_sketch = []
+
+		for item in self.sketch:
+			if item == max_prime:
+				continue
+			true_sketch.append(item)
+
+		self.sketch = true_sketch
+		self.sketch_size = len(true_sketch)
+
+	def common(self, other):
+		com = 0
+		for item in self.sketch:
+			if item in other.sketch:
+				com += 1
+		return com
+
+	def jaccard(self, other):
+		return self.common(other) * 1.0 / (other.sketch_size + self.sketch_size)
+
 
 def get_seq(filename):
 	seq = ''
@@ -57,9 +80,16 @@ def yield_kmers(seq, kmer_size):
 		yield seq[i: i+kmer_size]
 
 def test():
-	myMash = Mash()
+	myMash = Mash(filename = 'test.fna')
 	myMash.get_sketch()
 	print myMash.sketch
+	m2 = Mash(filename = 'test2.fna')
+	m2.get_sketch()
+	print m2.sketch
+
+	print myMash.common(m2)
+	print myMash.jaccard(m2)
+
 
 if __name__ == '__main__':
 	test()
