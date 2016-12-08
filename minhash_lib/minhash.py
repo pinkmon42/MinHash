@@ -18,7 +18,11 @@ class MinHash:
 		self.hashtable = util.get_hashtable(signature_size)
 		self.signature = self.get_signature()
 
+
 	def get_signature(self):
+		'''
+		get signature simple hash version
+		'''
 		sig = []
 		for coeff in self.hashtable:
 			min_sig = 4294967311
@@ -29,6 +33,13 @@ class MinHash:
 					min_sig = r
 			sig.append(r)
 		return sig
+
+	def rotate_hash(self):
+		'''
+		get signature rotate hash version
+		'''
+		
+		pass
 
 	def write_sig_file(self):
 		output_file = ''.join((self.filename, '.sig'))

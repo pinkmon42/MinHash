@@ -1,4 +1,5 @@
 import util
+import mmh3
 
 class LSH():
 	def __init__(self, kmer_size, sig_size, band_num):
