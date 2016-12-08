@@ -1,5 +1,8 @@
 import util
 import mmh3
+import minhash
+
+max_prime = 1610612741
 
 class LSH():
 	def __init__(self, kmer_size, sig_size, band_num):
@@ -8,39 +11,43 @@ class LSH():
 		self.sig_size = sig_size
 		self.band_num = band_num
 		self.band_size = sig_size / band_num
-
-		self.seq_dic = {} # dictionary of sequence
 		
 		self.seq_num = 0
+
+		self.instance = []
 
 		self.sig = []
 		self.bands = []
 
+		# thredhold to count a pair as a common pair
+		self.common_t = 1
+
 
 	def add(self, filename):
 		'''
-		add new sequences to LSH
+		add new minhash instance to LSH
 		'''
 
 		index = self.seq_num
+		
 		self.seq_num = index + 1
 
-		kmers = util.get_kmers(filename, self.kmer_size)
+		new_instance = minhash.MinHash(filename,self.kmer_size, self.sig_size)
 
-		# need to change the hash function to different hash function
-		l = []
-		# need to change the hash part
-		for i in range(self.sig_size):
-			l.append(min(map(hash, kmers)))
+		self.instance.append(new_instance.name)
+
+		new_instance.get_signature_xor()
+
 		self.sig.append([])
-		self.sig[index] = l
+		self.sig[index] = new_instance.signature
 
 		b = []
 		for i in range(self.band_num):
-			b.append(self.get_band_value(l[i:i+self.band_size]))
+			b.append(self.get_band_value(self.sig[index][i:i+self.band_size]))
 		self.bands.append([])
 		self.bands[index] = b
 
+		
 
 	def update(self):
 		'''
@@ -74,15 +81,31 @@ class LSH():
 		'''
 		pair = []
 		for i in range(self.band_num):
-		
-			seq_bucket = column(self.bands,seq_index)
+			seq_bucket = column(self.bands,i)
 			print seq_bucket
 			pair.append([])
 			for index, value in enumerate(seq_bucket):
 				if value == seq_bucket[seq_index] and not index == seq_index:
 					pair[i].append(index)
+		return pair
 
-		print pair
+	def count_common(self, seq_index):
+		pair = self.get_pairs(seq_index)
+
+		count = [0] * len(self.instance)
+		
+		for row in pair:
+			for seq_index in row:
+				count[seq_index] += 1
+
+		result = []
+
+		for index, val in enumerate(count):
+			if val >= self.common_t:
+				result.append(self.instance[index])
+
+		return result
+
 
 
 	def query(self, new_sequence):
@@ -105,6 +128,7 @@ def test():
 	print myLSH.bands
 
 	myLSH.get_pairs(0)
+	print myLSH.count_common(0)
 
 
 if __name__ == '__main__':
