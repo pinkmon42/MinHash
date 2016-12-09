@@ -10,7 +10,7 @@ import util
 max_prime = 1610612741
 
 class Mash:
-	def __init__(self, kmer_size = 21, sketch_size = 10, filename = None):
+	def __init__(self, kmer_size = 15, sketch_size = 1000, filename = None):
 
 		if filename == None:
 			raise Exception
@@ -19,17 +19,21 @@ class Mash:
 		self.sketch_size = sketch_size
 		self.filename = filename
 
+		self.name = filename.split('.')[0]
+
 		# sketch size << number of total kmers
 		self.sketch = [max_prime] * sketch_size
 
 		self.prime = max_prime
+
+		self.get_sketch()
 
 
 	def get_sketch(self):
 		seq = get_seq(self.filename)
 		for kmer in yield_kmers(seq, self.kmer_size):
 			
-			r = mmh3.hash(kmer)
+			r = mmh3.hash(kmer) % max_prime
 			
 			if r > self.sketch[self.sketch_size - 1]:
 				continue
@@ -80,19 +84,45 @@ def yield_kmers(seq, kmer_size):
 	for i in range(len(seq) - kmer_size + 1):
 		yield seq[i: i+kmer_size]
 
-def test():
-	myMash = Mash(filename = 'genome2.fna')
-	myMash.get_sketch()
-	print myMash.sketch
-	m2 = Mash(filename = 'genome3.fna')
-	m2.get_sketch()
-	print m2.sketch
 
-	print myMash.common(m2)
-	print myMash.jaccard(m2)
 
+# example mash
+
+import os
+
+# all data in /lash/data directory
+def get_file_path(filename):
+	script_dir = os.path.dirname(__file__)
+	s = script_dir.split('/')
+	path = '/'.join(s[:-1])
+	path += '/data/' + filename
+	return path
+
+def get_pair_result():
+
+	for i in range(10):
+		seq1 = 'sequence' + str(i) + '.fasta.txt'
+		path1 = get_file_path(seq1)
+		m1 = Mash(filename = path1)
+		
+		for j in range(10):
+			if i == j :
+				continue
+			seq2 = 'sequence' + str(j) + '.fasta.txt'
+			path2 = get_file_path(seq2)
+			m2 = Mash(filename = path2)
+
+			print seq1,'jaccard distance to',seq2, m1.jaccard(m2)
 
 if __name__ == '__main__':
-	test()
+	get_pair_result()
+
+
+
+
+
+
+
+
 
 

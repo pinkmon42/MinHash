@@ -11,7 +11,7 @@ class MinHash:
 		MinHash
 	'''
 
-	def __init__(self, filename = None, kmer_size = None, signature_size = None):
+	def __init__(self, filename = None, kmer_size = 100, signature_size = 100):
 		# the max size of signature can not be bigger than 1000
 		if filename == None or kmer_size == None:
 			raise
@@ -26,6 +26,7 @@ class MinHash:
 		self.signature_size = signature_size
 		self.hashtable = util.get_hashtable(signature_size)
 		#self.signature = self.get_signature()
+		self.get_signature_xor()
 	
 	def get_signature_xor(self):
 		'''
@@ -36,10 +37,12 @@ class MinHash:
 
 		sig = [max_prime] * self.signature_size
 
+		print 'start'
 		for kmer in util.yield_kmers(seq, self.kmer_size):
 			r = mmh3.hash(kmer)
 			for i in range(self.signature_size):
 				sig[i] = min(sig[i], r^xortable[i] % max_prime)
+				
 
 		self.signature = sig
 
@@ -111,7 +114,43 @@ def test_minHash():
 	print a.signature
 	b.get_signature_xor()
 
+# example minhash
 
+import os
+
+# all data in /lash/data directory
+def get_file_path(filename):
+	script_dir = os.path.dirname(__file__)
+	s = script_dir.split('/')
+	path = '/'.join(s[:-1])
+	path += '/data/' + filename
+	return path
+
+def get_pair_result():
+	set_xor_hash()
+	for i in range(10):
+		seq1 = 'sequence' + str(i) + '.fasta.txt'
+		path1 = get_file_path(seq1)
+		m1 = MinHash(filename = path1)
+		
+		for j in range(10):
+			if i == j :
+				continue
+			seq2 = 'sequence' + str(j) + '.fasta.txt'
+			path2 = get_file_path(seq2)
+			m2 = MinHash(filename = path2)
+
+			print seq1,'jaccard distance to',seq2, m1.jaccard(m2)
 
 if __name__ == '__main__':
-	test_minHash()
+	get_pair_result()
+
+
+
+
+
+
+
+
+
+

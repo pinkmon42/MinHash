@@ -1,6 +1,3 @@
-from lash.mash import Mash
-from lash.minhash import MinHash
-from lash.lsh import LSH
-
-
-
+from mash import *
+from minhash import *
+from lsh import *
