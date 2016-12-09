@@ -116,9 +116,9 @@ def column(matrix, i):
 
 
 def test():
-	myLSH = LSH(20,12,3)
-	myLSH.add('test.fna')
-	myLSH.add('test2.fna')
+	myLSH = LSH(42,1000,50)
+	myLSH.add('genome3.fna')
+	myLSH.add('genome2.fna')
 
 	print myLSH.count_common(0)
 

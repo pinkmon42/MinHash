@@ -81,10 +81,10 @@ def yield_kmers(seq, kmer_size):
 		yield seq[i: i+kmer_size]
 
 def test():
-	myMash = Mash(filename = 'test.fna')
+	myMash = Mash(filename = 'genome2.fna')
 	myMash.get_sketch()
 	print myMash.sketch
-	m2 = Mash(filename = 'test2.fna')
+	m2 = Mash(filename = 'genome3.fna')
 	m2.get_sketch()
 	print m2.sketch
 

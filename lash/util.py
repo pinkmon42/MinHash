@@ -5,6 +5,16 @@ from hashlib import sha1
 import mmh3
 
 
+def get_seq(filename):
+	seq = ''
+	with open(filename,'r') as file:
+		for line in file:
+			if line[0] == '>':
+				continue
+			seq.append(line)
+	return seq
+
+
 # pickle a hash table for minHash
 def save_hashtable(max_num, tablesize = 256):
 	hashtable = []
@@ -41,6 +51,16 @@ def get_kmers(filename, kmersize):
 		kmers.append(mmh3.hash(kmer))
 
 	return kmers
+
+
+def get_seq(filename):
+	seq = ''
+	with open(filename,'r') as fp:
+		for line in fp:
+			if line[0] == '>':
+				continue
+			seq += line.strip()
+	return seq
 
 def yield_kmers(seq, kmersize):
 	for i in range(len(seq) - kmersize + 1):

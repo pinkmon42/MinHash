@@ -2,7 +2,7 @@ import util
 import pickle
 import numpy as np
 import mmh3
-
+import os
 
 max_prime = 1610612741
 
@@ -18,15 +18,32 @@ class MinHash:
 		if signature_size == None:
 			raise
 		self.filename = filename
+		self.name = filename.split('.')[0]
+
 		self.kmer_size = kmer_size
 
-		self.kmers = util.get_kmers(filename,kmer_size)
+		#self.kmers = util.get_kmers(filename,kmer_size)
 		self.signature_size = signature_size
 		self.hashtable = util.get_hashtable(signature_size)
-		self.signature = self.get_signature()
+		#self.signature = self.get_signature()
+	
+	def get_signature_xor(self):
+		'''
+		generate signatures using xor hash
+		'''
+		seq = util.get_seq(self.filename)
+		xortable = get_xor_hashtable(self.signature_size)
 
+		sig = [max_prime] * self.signature_size
 
-	def get_signature(self):
+		for kmer in util.yield_kmers(seq, self.kmer_size):
+			r = mmh3.hash(kmer)
+			for i in range(self.signature_size):
+				sig[i] = min(sig[i], r^xortable[i] % max_prime)
+
+		self.signature = sig
+
+	def get_signature_simple(self):
 		'''
 		get signature simple hash version
 		'''
@@ -49,28 +66,11 @@ class MinHash:
 		pass
 
 	def write_sig_file(self):
-		output_file = ''.join((self.filename, '.sig'))
+		output_file = ''.join((self.name, '.sig'))
 		with open(output_file, 'w') as f:
 			for sig in self.signature:
 				f.write(str(sig)+"\n")
 	
-	
-	def get_signature_xor(self):
-		'''
-		generate signatures using xor hash
-		'''
-		seq = util.get_seq(self.filename)
-		xortable = get_xor_hashtable(self.signature_size)
-
-		sig = [max_prime] * self.signature_size
-
-		for kmer in util.yield_kmers(seq, self.kmer_size):
-			r = mmh3.hash(kmer)
-			for i in range(self.signature_size):
-				sig[i] = min(sig[i], r^xortable[i] % max_prime)
-
-		self.signature = sig
-
 	def common(self, other):
 		com = 0
 		for item in self.signature:
@@ -82,15 +82,18 @@ class MinHash:
 		return self.common(other) * 1.0 / (self.signature_size + other.signature_size)
 
 
-
-
-
 def set_xor_hash():
+	if os.path.isfile('xorhash.txt'):
+		return
+
 	xortable = np.random.randint(0, max_prime, 1000)
 	with open('xorhash.txt','w') as fp:
 		pickle.dump(xortable, fp)
 
 def get_xor_hashtable(size):
+	if not os.path.isfile('xorhash.txt'):
+		set_xor_hash()
+
 	table = []
 	with open('xorhash.txt','r') as fp:
 		table = pickle.load(fp)
@@ -99,10 +102,8 @@ def get_xor_hashtable(size):
 
 
 def test_minHash():
-	a = MinHash('test.fna',21,128)
-	b = MinHash('test2.fna',21,128)
-	a.write_sig_file()
-	b.write_sig_file()
+	a = MinHash('genome2.fna',21,128)
+	b = MinHash('genome3.fna',21,128)
 
 	set_xor_hash()
 	print get_xor_hashtable(10)
@@ -110,8 +111,7 @@ def test_minHash():
 	print a.signature
 	b.get_signature_xor()
 
-	print a.common(b)
-	print a.jaccard(b)
+
 
 if __name__ == '__main__':
 	test_minHash()
