@@ -1,5 +1,4 @@
-# MinHash
-
+# Lash
 Using python to implement
 Mash
 MinHash
