@@ -8,4 +8,8 @@ setup(name='minhash',
       author_email='zywong159@gmail.com',
       license='MIT',
       packages=['lash'],
+      install_requires=[
+          'numpy',
+          'mmh3',
+      ],
       zip_safe=False)
